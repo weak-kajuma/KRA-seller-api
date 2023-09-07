@@ -2,9 +2,10 @@
   "name": "kra-seller-api",
   "version": "1.0.0",
   "description": "",
-  "main": "api/main.js",
+  "main": "dist/main.js",
   "scripts": {
-    "start": "node api/main.js",
+    "start": "node dist/main.js",
+    "start:prod": "tsc && node dist/main.js",
     "build": "tsc",
     "dev": "nodemon"
   },
@@ -19,6 +20,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mysql2": "^3.6.0"
   }
 }
