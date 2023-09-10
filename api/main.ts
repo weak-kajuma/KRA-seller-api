@@ -1,8 +1,8 @@
 import express from 'express'
-import testRouter from './router/test'
 import dotenv from 'dotenv'
-
 dotenv.config()
+import ticketRouter from './router/ticket'
+import raceRouter from './router/race'
 
 const app: express.Express = express()
 app.use(express.json())
@@ -18,7 +18,8 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 })
 
 // ここにrouterを追加していく
-app.use("/test", testRouter)
+app.use("/ticket", ticketRouter)
+app.use("/race", raceRouter)
 
 const PORT = process.env.PORT || 8080
 
