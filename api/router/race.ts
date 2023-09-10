@@ -34,6 +34,7 @@ router.put(
             const payout: number = race.totalPayout(kraTicket); //払い戻し
             if (payout > 0) {
                 //TODO Transaction作成 user_id={kraTicket.user} dealer_id="1c34" hide_detail="none" detail={kraTicket.type} amount={payout}
+                //Money-Manager APIで
             }
         });
         return res.status(200).json(kraTickets);
