@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import mysql_connect from "./../utils/mysqlConnect";
 import { Ticket } from "../types/Ticket";
+import axios from "axios";
+import loginAndGetToken from "../utils/loginAndgetToken";
 
 const router = express.Router();
 const con = mysql_connect();
@@ -42,6 +44,8 @@ router.get("/get/:ticket_id", async (req: Request, res: Response<Ticket>) => {
 });
 
 router.post("/add", async (req: Request<Ticket>, res: Response<Ticket>) => {
+    const idToken = await loginAndGetToken()
+    if (!idToken) throw new Error('Cannot Login');
     const body = req.body;
     const [rows] = await con.query<ResultSetHeader>(
         "INSERT INTO ticket (user_id, horse, type, option, optNum, bet, race) VALUES (?, JSON_ARRAY(?), ?, ?, ?, ?, ?)",
@@ -59,7 +63,18 @@ router.post("/add", async (req: Request<Ticket>, res: Response<Ticket>) => {
         "SELECT * FROM ticket WHERE ticket_id = ?",
         [rows.insertId]
     );
-    //TODO Transaction作成 user_id={ticket.user_id} dealer_id="1c34" hide_detail="none" detail={ticket.type} amount={ticket.bet}
+    //Transaction作成 user_id={ticket.user_id} dealer_id="1c34" hide_detail="none" detail={ticket.type} amount={ticket.bet}
+    await axios.post(`${process.env.ENDPOINT}/transactions`, {
+        headers: {Authorization: `Bearer ${idToken}`},
+        body: {
+            user_id: ticket.user,
+            dealer_id: process.env.DEALERID,
+            amount: ticket.bet,
+            type: "bet",
+            detail: ticket.type.toString(),
+            hide_detail: ""
+        }
+    })
     res.status(200).json({
         ticket_id: ticket.ticket_id,
         user_id: ticket.user_id,
