@@ -1,8 +1,10 @@
-import { createPool } from "mysql2/promise"
+import { createPool } from "mysql2/promise";
 
 const mysql_connect = () => {
-    if (!process.env.DATABASE_URL) throw Error("DATABASE_URL is not defined")
-    return createPool(process.env.DATABASE_URL)
-}
+    if (!process.env.DATABASE_URL) throw Error("DATABASE_URL is not defined");
+    return createPool(process.env.DATABASE_URL);
+};
 
-export default mysql_connect
+export const token =
+    "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5MGFkMTE4YTk0MGFkYzlmMmY1Mzc2YjM1MjkyZmVkZThjMmQwZWUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9uZXktbWFuYWdlci0yZTE1MiIsImF1ZCI6Im1vbmV5LW1hbmFnZXItMmUxNTIiLCJhdXRoX3RpbWUiOjE2OTQzNTEwMDksInVzZXJfaWQiOiJUTlFRcnljTUlkY1VRR1hlQXNma1EzVGh1TnMyIiwic3ViIjoiVE5RUXJ5Y01JZGNVUUdYZUFzZmtRM1RodU5zMiIsImlhdCI6MTY5NDM1MTAwOSwiZXhwIjoxNjk0MzU0NjA5LCJlbWFpbCI6IjIwMjEwMTczQHRhay5lZC5qcCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyIyMDIxMDE3M0B0YWsuZWQuanAiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.gRmjP6tAPYXB3cII8_h602BeTCyl3T-bXUG0lYH5Hi8MZXixPMtpbqw0WadYo_lULJSnE9fCBsUSDN4C2jCOUsqGktKnb22-hsb4E-RUYhcYEttLdxGxV75P2x0oCcgxX8owkU-rewdT-6km_tLlvcX0ci2ujVI2YZa7wbgZHRBZwHfISoNlVwro5NNXZCq4sD75jJkpQq30HHjQimEtF5grkacKjdBV96_StCWF8HieXSCeYPLxvLhO22F8iVkTClSVjwN8I-3x7v3248B9ncF1ta82bRfTkVbnBxe9Is9RV6G32eQ6e4VoLou2Fn8PUv8IbDAyc_EzFD6Cy7WEOQ";
+export default mysql_connect;
