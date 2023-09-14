@@ -2,8 +2,6 @@ import express, { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import mysql_connect from "./../utils/mysqlConnect";
 import { Ticket } from "../types/Ticket";
-import axios from "axios";
-import loginAndGetToken from "../utils/loginAndgetToken";
 
 const router = express.Router();
 const con = mysql_connect();
@@ -44,37 +42,36 @@ router.get("/get/:ticket_id", async (req: Request, res: Response<Ticket>) => {
 });
 
 router.post("/add", async (req: Request<Ticket>, res: Response<Ticket>) => {
-    const idToken = await loginAndGetToken()
-    if (!idToken) throw new Error('Cannot Login');
-    const body = req.body;
-    const [rows] = await con.query<ResultSetHeader>(
+    const [checkMoneyRows] = await con.query<RowDataPacket[]>("SELECT having_money FROM users WHERE user_id = ?", [req.body.user_id])
+    if (checkMoneyRows.length === 0) throw new Error("The User is not found.")
+    const setMoney = checkMoneyRows[0].having_money - parseInt(req.body.bet)
+    if (setMoney < 0) throw new Error("You do not have enough money to complete the bet.")
+    const [addTicketRows] = await con.query<ResultSetHeader>(
         "INSERT INTO ticket (user_id, horse, type, option, optNum, bet, race) VALUES (?, JSON_ARRAY(?), ?, ?, ?, ?, ?)",
         [
-            body.id,
-            body.horse,
-            body.type,
-            body.option,
-            body.optNum,
-            body.bet,
-            body.race,
+            req.body.user_id,
+            req.body.horse,
+            req.body.type,
+            req.body.option,
+            req.body.optNum,
+            req.body.bet,
+            req.body.race,
         ]
     );
+    await con.query("INSERT INTO transactions (transaction_id, user_id, dealer_id, amount, type, detail, hide_detail) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+        Math.floor(Math.random() * 65535).toString(16).padStart(4, '0'), // Transaction id
+        req.body.user_id,
+        process.env.DEALERID,
+        req.body.bet,
+        "bet",
+        req.body.type.toString(),
+        ""
+    ]);
+    await con.query(`UPDATE users SET having_money = ? WHERE user_id = "${req.body.user_id}"`, [setMoney,req.body.user_id]);
     const [[ticket]] = await con.query<RowDataPacket[]>(
         "SELECT * FROM ticket WHERE ticket_id = ?",
-        [rows.insertId]
+        [addTicketRows.insertId]
     );
-    //Transaction作成 user_id={ticket.user_id} dealer_id="1c34" hide_detail="none" detail={ticket.type} amount={ticket.bet}
-    await axios.post(`${process.env.ENDPOINT}/transactions`, {
-        headers: {Authorization: `Bearer ${idToken}`},
-        body: {
-            user_id: ticket.user,
-            dealer_id: process.env.DEALERID,
-            amount: ticket.bet,
-            type: "bet",
-            detail: ticket.type.toString(),
-            hide_detail: ""
-        }
-    })
     res.status(200).json({
         ticket_id: ticket.ticket_id,
         user_id: ticket.user_id,

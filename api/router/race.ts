@@ -3,8 +3,6 @@ import { RowDataPacket } from "mysql2";
 import mysql_connect from "./../utils/mysqlConnect";
 import { KRATicket, RacingResult } from "../kra/KRAClient";
 import { Races } from "../utils/constant";
-import loginAndGetToken from "../utils/loginAndgetToken";
-import axios from "axios";
 
 const router = express.Router();
 const con = mysql_connect();
@@ -16,8 +14,6 @@ router.put(
             "SELECT * FROM ticket WHERE race = ?",
             [req.params.race_id]
         );
-        const idToken = await loginAndGetToken()
-        if (!idToken) throw new Error('Cannot Login');
         const kraTickets: KRATicket[] = tickets.map(
             (t) =>
                 new KRATicket(
@@ -36,20 +32,23 @@ router.put(
         const race = Races[id].setResult(new RacingResult([f, s, t]));
         //Transaction作成 user_id={kraTicket.user} dealer_id="1c34" hide_detail="none" detail={kraTicket.type} amount={payout}
         //Money-Manager APIで
-        await Promise.all(kraTickets.map((kraTicket) => {
+        await Promise.all(kraTickets.map(async (kraTicket) => {
             const payout: number = race.totalPayout(kraTicket); //払い戻し
             if (payout > 0) {
-                return axios.post(`${process.env.ENDPOINT}/transactions`, {
-                    headers: {Authorization: `Bearer ${idToken}`},
-                    body: {
-                        user_id: kraTicket.user,
-                        dealer_id: process.env.DEALERID,
-                        amount: payout,
-                        type: "payout",
-                        detail: kraTicket.type.toString(),
-                        hide_detail: ""
-                    }
-                }).catch(e => console.log(e))
+                Promise.all([
+                    con.query("INSERT INTO transactions (transaction_id, user_id, dealer_id, amount, type, detail, hide_detail) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+                        Math.floor(Math.random() * 65535).toString(16).padStart(4, '0'), // Transaction id
+                        kraTicket.user,
+                        process.env.DEALERID,
+                        payout,
+                        "payout",
+                        kraTicket.type.toString(),
+                        ""
+                    ]),
+                    await con.query(`UPDATE users SET having_money = having_money + ? WHERE user_id = "${kraTicket.user}"`, [
+                        payout
+                    ])
+                ])
             }
         }));
         return res.status(200).json(kraTickets);
