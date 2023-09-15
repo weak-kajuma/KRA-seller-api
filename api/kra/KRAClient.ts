@@ -352,6 +352,7 @@ export const KRAFormation = (
     for (const first of f) {
         for (const second of s) {
             for (const third of t) {
+                if (!(f == s || s == t || f == t)) {
                 switch (type) {
                     case TicketType.EXACTA:
                         buys.push(
@@ -372,6 +373,7 @@ export const KRAFormation = (
                             )
                         );
                 }
+            }
             }
         }
     }
