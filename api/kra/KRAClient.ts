@@ -352,28 +352,28 @@ export const KRAFormation = (
     for (const first of f) {
         for (const second of s) {
             for (const third of t) {
-                if (!(f == s || s == t || f == t)) {
-                switch (type) {
-                    case TicketType.EXACTA:
-                        buys.push(
-                            new KRABuying(
-                                TicketType.EXACTA,
-                                bet,
-                                [first, second],
-                                user
-                            )
-                        );
-                    case TicketType.TRIFECTA:
-                        buys.push(
-                            new KRABuying(
-                                TicketType.TRIFECTA,
-                                bet,
-                                [first, second, third],
-                                user
-                            )
-                        );
+                if (!(first == second || second == third || first == third)) {
+                    switch (type) {
+                        case TicketType.EXACTA:
+                            buys.push(
+                                new KRABuying(
+                                    TicketType.EXACTA,
+                                    bet,
+                                    [first, second],
+                                    user
+                                )
+                            );
+                        case TicketType.TRIFECTA:
+                            buys.push(
+                                new KRABuying(
+                                    TicketType.TRIFECTA,
+                                    bet,
+                                    [first, second, third],
+                                    user
+                                )
+                            );
+                    }
                 }
-            }
             }
         }
     }
